@@ -1,7 +1,9 @@
 env.py
-package.json
-.DS_Store
 .ipynb_checkpoints/
 __pycache__
-titanic.csv
-iris.csv
+.DS_Store
+Thumbs.db
+.vscode/
+*.csv
+*.json
+*.xlsx
