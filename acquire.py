@@ -18,8 +18,8 @@ def get_connection(db_name):
     This function uses my info from my env file to
     create a connection url to access the Codeup db.
     '''
-    from env import host, username, password
-    return f'mysql+pymysql://{username}:{password}@{host}/{db_name}'
+    from env import host, user, password
+    return f'mysql+pymysql://{user}:{password}@{host}/{db_name}'
 
 # Use the above helper function and a sql query in a single function.
 def get_new_titanic_data():
