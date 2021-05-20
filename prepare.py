@@ -1,15 +1,65 @@
 import pandas as pd
 import numpy as np
-import acquire
+
 from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
 
 
-def prep_iris(iris_df):
-    iris_df = iris_df.drop(columns=['species_id', 'measurement_id'])
-    iris_df = iris_df.rename(columns={'species_name': 'species'})
-    dummy_df = pd.get_dummies(iris_df[['species']])
-    iris_df = pd.concat([iris_df, dummy_df], axis=1)
-    return iris_df
+###################### Prep Iris Data ######################
+
+def prep_iris(df):
+    '''
+    This function takes in the iris df acquired by get_iris_data
+    Returns the iris df with dummy variables encoding species.
+    '''
+    # drop and rename columns
+    df = df.drop(columns='species_id').rename(columns={'species_name': 'species'})
+    
+    # create dummy columns for species
+    species_dummies = pd.get_dummies(df.species, drop_first=True)
+    
+    # add dummy columns to df
+    df = pd.concat([df, species_dummies], axis=1)
+    
+    return df
+
+###################### Prep Titanic Data ######################
+
+def titanic_split(df):
+    '''
+    This function take in the titanic data acquired by get_titanic_data,
+    performs a split and stratifies survived column.
+    Returns train, validate, and test dfs.
+    '''
+    train_validate, test = train_test_split(df, test_size=.2, 
+                                        random_state=123, 
+                                        stratify=df.survived)
+    train, validate = train_test_split(train_validate, test_size=.3, 
+                                   random_state=123, 
+                                   stratify=train_validate.survived)
+    return train, validate, test
+
+
+
+def impute_mean_age(train, validate, test):
+    '''
+    This function imputes the mean of the age column for
+    observations with missing values.
+    Returns transformed train, validate, and test df.
+    '''
+    # create the imputer object with mean strategy
+    imputer = SimpleImputer(strategy = 'mean')
+    
+    # fit on and transform age column in train
+    train['age'] = imputer.fit_transform(train[['age']])
+    
+    # transform age column in validate
+    validate['age'] = imputer.transform(validate[['age']])
+    
+    # transform age column in test
+    test['age'] = imputer.transform(test[['age']])
+    
+    return train, validate, test
 
 
 def prep_titanic(df):
@@ -37,18 +87,4 @@ def prep_titanic(df):
     # impute mean of age into null values in age column
     train, validate, test = impute_mean_age(train, validate, test)
     
-    return train, validate, test
-
-
-
-def train_validate_test_split(df, seed=123):
-    train_and_validate, test = train_test_split(
-        df, test_size=0.2, random_state=seed, stratify=df.survived
-    )
-    train, validate = train_test_split(
-        train_and_validate,
-        test_size=0.3,
-        random_state=seed,
-        stratify=train_and_validate.survived,
-    )
     return train, validate, test
